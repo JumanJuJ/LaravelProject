@@ -124,4 +124,30 @@ class ChirpController extends Controller
             'user' => $user,
         ]);
     }
-}
+
+    public function follow(Request $request, User $userFollowed)
+    {
+        if ($userFollowed->id === $request->user()->id) {
+            $message = 'You cannot follow yourself.';
+
+            return $request->wantsJson()
+                ? response()->json(['message' => $message], 422)
+                : redirect()->back()->withErrors($message);
+        }
+
+        if ($userFollowed->followers()->where('user_id', $request->user()->id)->exists()) {
+            $message = 'You are already following this user.';
+
+            return $request->wantsJson()
+                ? response()->json(['message' => $message], 422)
+                : redirect()->back()->withErrors($message);
+        }
+
+        $request->user()->following()->syncWithoutDetaching([$userFollowed->id]);
+        $message = 'You are now following '.$userFollowed->name.'.';
+
+        return $request->wantsJson()
+            ? response()->json(['message' => $message, 'user' => $userFollowed])
+            : redirect()->back()->with('success', $message);
+    }
+} 

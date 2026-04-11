@@ -47,8 +47,20 @@
                     <div class="card-body">
                         @if ($user)
                             <h2 class="text-xl font-semibold">User found</h2>
-                            <p class="mt-2">Nome: <strong>{{ $user->name }}</strong></p>
-                            <p>Email: <strong>{{ $user->email }}</strong></p>
+                            <div class="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <p>Nome: <strong>{{ $user->name }}</strong></p>
+                                    <p>Email: <strong>{{ $user->email }}</strong></p>
+                                </div>
+                                <button
+                                    id="follow-button"
+                                    type="button"
+                                    data-user-id="{{ $user->id }}"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Follow
+                                </button>
+                            </div>
                         @else
                             <h2 class="text-xl font-semibold">No user found</h2>
                             <p class="mt-2 text-base-content/70">Non esiste alcun utente con questo nome.</p>
@@ -65,6 +77,75 @@
             const nameInput = document.getElementById('search-name');
             const resultContainer = document.getElementById('search-result-container');
             const errorContainer = document.getElementById('search-error');
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            function bindFollowButton() {
+                const followButton = document.getElementById('follow-button');
+
+                if (!followButton) {
+                    return;
+                }
+
+                followButton.addEventListener('click', async function () {
+                    const userId = followButton.dataset.userId;
+
+                    if (!userId || !csrfToken) {
+                        return;
+                    }
+
+                    followButton.disabled = true;
+                    followButton.textContent = 'Following...';
+
+                    try {
+                        const response = await fetch(`/users/${encodeURIComponent(userId)}/follow`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                            },
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            followButton.disabled = false;
+                            followButton.textContent = '+ Follow';
+                            resultContainer.innerHTML = `
+                                <div class="card bg-base-100 shadow mt-4" id="search-result-message">
+                                    <div class="card-body text-error">
+                                        ${data.message || 'Unable to follow user.'}
+                                    </div>
+                                </div>
+                            `;
+                            return;
+                        }
+
+                        followButton.textContent = 'Following';
+                        followButton.classList.remove('btn-primary');
+                        followButton.classList.add('btn-success');
+
+                        resultContainer.innerHTML += `
+                            <div class="card bg-base-100 shadow mt-4" id="search-result-message">
+                                <div class="card-body text-success">
+                                    ${data.message}
+                                </div>
+                            </div>
+                        `;
+                    } catch (error) {
+                        followButton.disabled = false;
+                        followButton.textContent = '+ Follow';
+                        resultContainer.innerHTML = `
+                            <div class="card bg-base-100 shadow mt-4" id="search-result-message">
+                                <div class="card-body text-error">
+                                    Qualcosa è andato storto. Riprova.
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
 
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
@@ -108,16 +189,31 @@
 
                     const data = await response.json();
 
+
                     if (data.exists) {
                         resultContainer.innerHTML = `
                             <div class="card bg-base-100 shadow mt-6" id="search-result">
                                 <div class="card-body">
                                     <h2 class="text-xl font-semibold">User found</h2>
-                                    <p class="mt-2">Nome: <strong>${data.user.name}</strong></p>
-                                    <p>Email: <strong>${data.user.email}</strong></p>
+                                    <div class="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                        <div>
+                                            <p>Nome: <strong>${data.user.name}</strong></p>
+                                            <p>Email: <strong>${data.user.email}</strong></p>
+                                        </div>
+                                        <button
+                                            id="follow-button"
+                                            type="button"
+                                            data-user-id="${data.user.id}"
+                                            class="btn btn-sm btn-primary"
+                                        >
+                                            + Follow
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         `;
+
+                        bindFollowButton();
                     } else {
                         resultContainer.innerHTML = `
                             <div class="card bg-base-100 shadow mt-6" id="search-result">
@@ -139,6 +235,8 @@
                     `;
                 }
             });
+
+            bindFollowButton();
         });
     </script>
 </x-layout>

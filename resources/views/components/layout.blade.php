@@ -14,6 +14,7 @@
     <meta property="og:description"
         content="A demo social media platform highlighting the power and simplicity of Laravel." />
     <meta property="og:url" content="https://chirper.laravel.cloud" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">

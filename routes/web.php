@@ -15,6 +15,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/chirps/{chirp}', [ChirpController::class, 'update']);
     Route::delete('/chirps/{chirp}', [ChirpController::class, 'destroy']);
     Route::get('/search', [ChirpController::class, 'search'])->name('search');
+    Route::post('/users/{userFollowed}/follow', [ChirpController::class, 'follow']);
 });
 
 // Registration routes
