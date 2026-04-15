@@ -7,6 +7,7 @@ use App\Http\Controllers\ChirpController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ChirpController::class, 'index']);
+Route::get('/users/{userId}', [ChirpController::class, 'showProfile'])->name('profile');
 
 // Protected routes
 Route::middleware('auth')->group(function () {

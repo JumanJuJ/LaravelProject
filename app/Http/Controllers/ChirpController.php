@@ -150,4 +150,40 @@ class ChirpController extends Controller
             ? response()->json(['message' => $message, 'user' => $userFollowed])
             : redirect()->back()->with('success', $message);
     }
-} 
+
+    public function showProfile(Request $request, int $userId)
+    {
+        $user = User::withCount(['chirps', 'followers', 'following'])
+            ->with(['followers' => function ($query) {
+                $query->select('users.id', 'users.name');
+            }])
+            ->findOrFail($userId);
+
+        $chirps = $user->chirps()->latest()->get();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'chirps_count' => $user->chirps_count,
+                'followers_count' => $user->followers_count,
+                'following_count' => $user->following_count,
+                'followers' => $user->followers->map(fn (User $follower) => [
+                    'id' => $follower->id,
+                    'name' => $follower->name,
+                ]),
+                'chirps' => $chirps->map(fn (Chirp $chirp) => [
+                    'id' => $chirp->id,
+                    'message' => $chirp->message,
+                    'created_at' => $chirp->created_at->toDateTimeString(),
+                ]),
+            ]);
+        }
+
+        return view('profile', [
+            'user' => $user,
+            'chirps' => $chirps,
+        ]);
+    }
+}

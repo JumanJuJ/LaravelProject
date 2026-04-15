@@ -57,7 +57,9 @@
         </div>
         <div class="navbar-end gap-4 px-4">
             @auth
-                <span class="text-sm">{{ auth()->user()->name }}</span>
+                <a href="{{ route('profile', ['userId' => auth()->id()]) }}" class="text-sm hover:underline">
+                    {{ auth()->user()->name }}
+                </a>
                 <form method="POST" action="/logout" class="inline">
                     @csrf
                     <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
