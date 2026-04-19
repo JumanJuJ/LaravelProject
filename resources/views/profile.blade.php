@@ -10,6 +10,16 @@
                     <div>
                         <h1 class="text-3xl font-bold">{{ $user->name }}</h1>
                         <p class="text-sm text-base-content/70">{{ $user->email }}</p>
+
+                        @if (auth()->check() && auth()->id() === $user->id)
+                            <form method="POST" action="{{ route('visibility.toggle') }}" class="mt-4">
+                                @csrf
+
+                                <button type="submit" class="btn btn-outline btn-sm">
+                                    Rendi il profilo {{ $user->is_public ? 'privato' : 'pubblico' }}
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-3 gap-3 text-center sm:w-auto">

@@ -57,7 +57,7 @@
         </div>
         <div class="navbar-end gap-4 px-4">
             @auth
-                <a href="{{ route('profile', ['userId' => auth()->id()]) }}" class="text-sm hover:underline">
+                <a href="#" id="profile-link" data-user-id="{{ auth()->id() }}" class="text-sm hover:underline">
                     {{ auth()->user()->name }}
                 </a>
                 <form method="POST" action="/logout" class="inline">
@@ -112,6 +112,30 @@
             </p>
         </div>
     </footer>
+
+    @auth
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const profileLink = document.getElementById('profile-link');
+
+                if (!profileLink) {
+                    return;
+                }
+
+                profileLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+
+                    const userId = profileLink.dataset.userId;
+
+                    if (!userId) {
+                        return;
+                    }
+
+                    window.location.href = '/users/' + encodeURIComponent(userId);
+                });
+            });
+        </script>
+    @endauth
 </body>
 
 </html>

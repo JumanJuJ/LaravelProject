@@ -159,6 +159,10 @@ class ChirpController extends Controller
             }])
             ->findOrFail($userId);
 
+        if (! $user->is_public && $request->user()?->id !== $user->id) {
+            abort(403, 'This profile is private.');
+        }
+
         $chirps = $user->chirps()->latest()->get();
 
         if ($request->wantsJson()) {
@@ -185,5 +189,18 @@ class ChirpController extends Controller
             'user' => $user,
             'chirps' => $chirps,
         ]);
+    }
+
+    public function setVisibility(Request $request)
+    {
+        $user = $request->user();
+        $user->is_public = ! $user->is_public;
+        $user->save();
+
+        $message = 'Your profile is now '.($user->is_public ? 'public' : 'private').'.';
+
+        return $request->wantsJson()
+            ? response()->json(['message' => $message, 'is_public' => $user->is_public])
+            : redirect()->back()->with('success', $message);
     }
 }

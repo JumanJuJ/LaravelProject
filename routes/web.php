@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/chirps/{chirp}', [ChirpController::class, 'destroy']);
     Route::get('/search', [ChirpController::class, 'search'])->name('search');
     Route::post('/users/{userFollowed}/follow', [ChirpController::class, 'follow']);
+    Route::post('/users/visibility', [ChirpController::class, 'setVisibility'])->name('visibility.toggle');
 });
 
 // Registration routes
