@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/search', [ChirpController::class, 'search'])->name('search');
     Route::post('/users/{userFollowed}/follow', [ChirpController::class, 'follow']);
     Route::post('/users/visibility', [ChirpController::class, 'setVisibility'])->name('visibility.toggle');
+    Route::post('/users/hashtags', [ChirpController::class, 'setHashtags'])->name('hashtags.update');
 });
 
 // Registration routes

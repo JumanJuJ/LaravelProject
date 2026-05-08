@@ -11,7 +11,51 @@
                         <h1 class="text-3xl font-bold">{{ $user->name }}</h1>
                         <p class="text-sm text-base-content/70">{{ $user->email }}</p>
 
+                        @if ($user->hashtags->isNotEmpty())
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                @foreach ($user->hashtags as $hashtag)
+                                    <span class="rounded-full border border-base-200 bg-base-200/50 px-3 py-1 text-sm text-base-content">#{{ $hashtag->tag }}</span>
+                                @endforeach
+                            </div>
+                        @endif
+
                         @if (auth()->check() && auth()->id() === $user->id)
+                            <div class="mt-4 flex gap-2">
+                                <button type="button" id="hashtag-edit-toggle" class="btn btn-secondary btn-sm">
+                                    Modifica hashtag
+                                </button>
+                                <span class="text-sm text-base-content/70 self-center">Usa il pulsante per aggiornare i tuoi hashtag.</span>
+                            </div>
+
+                            <div id="hashtag-form-wrapper" class="mt-4 hidden">
+                                <form method="POST" action="{{ route('hashtags.update') }}" id="hashtag-form" class="space-y-3">
+                                    @csrf
+
+                                    <label class="block text-sm font-medium text-base-content/70" for="hashtags">
+                                        Hashtag personali
+                                    </label>
+
+                                    <input
+                                        id="hashtags"
+                                        name="hashtags"
+                                        type="text"
+                                        value="{{ old('hashtags', $user->hashtags->pluck('tag')->map(fn ($tag) => '#'.$tag)->join(', ')) }}"
+                                        class="input input-bordered w-full"
+                                        placeholder="#laravel, #php, #developer"
+                                    />
+
+                                    <p class="text-xs text-base-content/60">
+                                        Inserisci gli hashtag separati da virgola. Verranno salvati senza il simbolo #.
+                                    </p>
+
+                                    <div id="hashtag-form-status" class="text-sm text-success"></div>
+
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        Salva hashtag
+                                    </button>
+                                </form>
+                            </div>
+
                             <form method="POST" action="{{ route('visibility.toggle') }}" class="mt-4">
                                 @csrf
 

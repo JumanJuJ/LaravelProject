@@ -154,9 +154,12 @@ class ChirpController extends Controller
     public function showProfile(Request $request, int $userId)
     {
         $user = User::withCount(['chirps', 'followers', 'following'])
-            ->with(['followers' => function ($query) {
-                $query->select('users.id', 'users.name');
-            }])
+            ->with([
+                'followers' => function ($query) {
+                    $query->select('users.id', 'users.name');
+                },
+                'hashtags',
+            ])
             ->findOrFail($userId);
 
         if (! $user->is_public && $request->user()?->id !== $user->id) {
@@ -177,6 +180,7 @@ class ChirpController extends Controller
                     'id' => $follower->id,
                     'name' => $follower->name,
                 ]),
+                'hashtags' => $user->hashtags->pluck('tag'),
                 'chirps' => $chirps->map(fn (Chirp $chirp) => [
                     'id' => $chirp->id,
                     'message' => $chirp->message,
@@ -202,5 +206,41 @@ class ChirpController extends Controller
         return $request->wantsJson()
             ? response()->json(['message' => $message, 'is_public' => $user->is_public])
             : redirect()->back()->with('success', $message);
+    }
+
+    public function setHashtags(Request $request)
+    {
+        $validated = $request->validate([
+            'hashtags' => 'nullable|string|max:255',
+        ]);
+
+        $tags = collect(explode(',', $validated['hashtags'] ?? ''))
+            ->map(fn (string $tag) => trim($tag))
+            ->filter()
+            ->map(fn (string $tag) => ltrim($tag, '#'))
+            ->unique()
+            ->values();
+
+        $user = $request->user();
+
+        if ($tags->isEmpty()) {
+            $user->hashtags()->delete();
+        } else {
+            $existing = $user->hashtags()->pluck('tag');
+            $user->hashtags()->whereNotIn('tag', $tags)->delete();
+
+            foreach ($tags as $tag) {
+                $user->hashtags()->updateOrCreate(
+                    ['tag' => $tag],
+                    ['tag' => $tag],
+                );
+            }
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'I tuoi hashtag sono stati aggiornati!']);
+        }
+
+        return redirect()->back()->with('success', 'Your hashtags have been updated!');
     }
 }
