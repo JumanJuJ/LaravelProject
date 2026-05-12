@@ -243,4 +243,18 @@ class ChirpController extends Controller
 
         return redirect()->back()->with('success', 'Your hashtags have been updated!');
     }
+
+    public function getHashtags(Request $request, int $userId)
+    {
+        $user = User::with('hashtags')->findOrFail($userId);
+
+        if (! $user->is_public && $request->user()?->id !== $user->id) {
+            abort(403, 'This profile is private.');
+        }
+
+        return response()->json([
+            'user' => $user,
+            'hashtags' => $user->hashtags,
+        ]);
+    }
 }
