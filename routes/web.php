@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\FeedAlgController;
 use App\Http\Controllers\Auth\Login;
 use App\Http\Controllers\Auth\Logout;
 use App\Http\Controllers\Auth\Register;
@@ -7,6 +8,7 @@ use App\Http\Controllers\ChirpController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ChirpController::class, 'index']);
+Route::get('/feed', [FeedAlgController::class, 'feed'])->middleware('auth')->name('feed');
 Route::get('/users/{userId}', [ChirpController::class, 'showProfile'])->name('profile');
 
 // Protected routes

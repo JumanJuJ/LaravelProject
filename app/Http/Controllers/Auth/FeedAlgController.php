@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth\FeedAlg;
+namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\ChirpController;
 use App\Models\Chirp;
